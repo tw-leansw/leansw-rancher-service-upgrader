@@ -1,0 +1,7 @@
+target
+.idea
+src/main/resources/public/**
+*.iml
+.DS_Store
+web.pid
+
