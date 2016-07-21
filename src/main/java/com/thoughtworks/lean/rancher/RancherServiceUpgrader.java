@@ -54,6 +54,9 @@ public class RancherServiceUpgrader implements CommandLineRunner {
     @Value("${status.check.interval:5000}")
     private long statusCheckInterval = 5000;
 
+    @Value("${only.healthy:false}")
+    private boolean onlyHealthy=false;
+
     Rancher rancher;
 
 
@@ -81,7 +84,7 @@ public class RancherServiceUpgrader implements CommandLineRunner {
 
             LOGGER.info("Get service succeed ! serviceName: " + service.getName() + " serviceId: " + service.getId());
             //System.out.println(project.getName());
-            if (!service.getState().equals("active")) {
+            if (!service.getState().equalsIgnoreCase("active")) {
                 String stateErrorInfo = "Service " + service.getName() + "(" + service.getId() + ") is not active State!!!";
                 throw new IllegalStateException(stateErrorInfo);
             }
@@ -103,9 +106,9 @@ public class RancherServiceUpgrader implements CommandLineRunner {
                 Thread.sleep(statusCheckInterval);
                 upgradeTime += statusCheckInterval;
                 if (upgradeTime % (statusCheckInterval * 4) == 0) {
-                    LOGGER.info("Service " + service.getName() + "(" + service.getId() + ") upgrading.......");
+                    LOGGER.info("Service " + service.getName() + "(" + service.getId() + ") status:" + serviceStatus.getState() + " healthy:" + serviceStatus.getHealthState() + ".......");
                 }
-                if (serviceStatus.getState().equals("upgraded") && serviceStatus.getHealthState().equals("healthy")) {
+                if (serviceStatus.getState().equalsIgnoreCase("upgraded") && serviceStatus.getHealthState().equalsIgnoreCase("healthy")) {
                     serviceService.finishupgrade(service.getId()).execute();
                     LOGGER.info("Service " + service.getName() + "(" + service.getId() + ") upgrade [[[Succeed]]] !");
                     return;
@@ -144,7 +147,7 @@ public class RancherServiceUpgrader implements CommandLineRunner {
 
     private Project getEnvironment(String projectName) throws IOException {
         ProjectService projectService = rancher.type(ProjectService.class);
-        return projectService.list().execute().body().getData().stream().filter(e -> e.getName().equals(projectName)).findFirst().get();
+        return projectService.list().execute().body().getData().stream().filter(e -> e.getName().equalsIgnoreCase(projectName)).findFirst().get();
     }
 
     public static void main(String[] args) throws Exception {
