@@ -55,7 +55,7 @@ public class RancherServiceUpgrader implements CommandLineRunner {
     private long statusCheckInterval = 5000;
 
     @Value("${only.healthy:false}")
-    private boolean onlyHealthy=false;
+    private boolean onlyHealthy = false;
 
     Rancher rancher;
 
@@ -84,7 +84,7 @@ public class RancherServiceUpgrader implements CommandLineRunner {
 
             LOGGER.info("Get service succeed ! serviceName: " + service.getName() + " serviceId: " + service.getId());
             //System.out.println(project.getName());
-            if (!service.getState().equalsIgnoreCase("active")) {
+            if (onlyHealthy && !service.getState().equalsIgnoreCase("active")) {
                 String stateErrorInfo = "Service " + service.getName() + "(" + service.getId() + ") is not active State!!!";
                 throw new IllegalStateException(stateErrorInfo);
             }
